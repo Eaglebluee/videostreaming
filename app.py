@@ -1,11 +1,12 @@
 import cv2
-import streamlit as st
 import numpy as np
 from PIL import Image
 import io
+import streamlit as st
+from streamlit_webrtc import VideoTransformerBase, webrtc_streamer
 
 
-class VideoTransformer:
+class VideoTransformer(VideoTransformerBase):
     def __init__(self):
         self.selected_filter = "None"
         self.blur_rate = 0.5
@@ -37,11 +38,11 @@ class VideoTransformer:
         return greyscale
 
     def sepia(self, frame):
-        frame_sepia = np.array(frame, dtype=np.float64)  # converting to float to prevent loss
+        frame_sepia = np.array(frame, dtype=np.float64)
         frame_sepia = cv2.transform(frame_sepia, np.matrix([[0.272, 0.534, 0.131],
                                                             [0.349, 0.686, 0.168],
-                                                            [0.393, 0.769, 0.189]]))  # multiplying image with sepia matrix
-        frame_sepia[np.where(frame_sepia > 255)] = 255  # normalizing values greater than 255 to 255
+                                                            [0.393, 0.769, 0.189]]))
+        frame_sepia[np.where(frame_sepia > 255)] = 255
         frame_sepia = np.array(frame_sepia, dtype=np.uint8)
         return frame_sepia
 
@@ -89,18 +90,14 @@ class VideoTransformer:
         if self.apply_enhancement_filter:
             processed_frame = self.enhance_details(processed_frame)
 
-        # Convert the processed frame to PIL Image
-        pil_image = Image.fromarray(cv2.cvtColor(processed_frame, cv2.COLOR_BGR2RGB))
+        return processed_frame
 
-        # Create a BytesIO object to hold the image data
-        image_stream = io.BytesIO()
-        pil_image.save(image_stream, format="JPEG")
-
-        # Rewind the stream to the beginning
-        image_stream.seek(0)
-
-        # Return the image stream
-        return image_stream
+    def transform_video(self, video):
+        frames = []
+        for frame in video:
+            processed_frame = self.transform(frame)
+            frames.append(processed_frame)
+        return frames
 
 
 def main():
@@ -126,40 +123,29 @@ def main():
     brightness_amount = st.sidebar.slider("Brightness", min_value=-50, max_value=50, value=0)
     apply_enhancement_filter = st.sidebar.checkbox('Enhance Details')
 
-    uploaded_file = st.file_uploader("Upload a video", type=["mp4"])
+    uploaded_file = st.file_uploader("Upload a video file", type=["mp4", "mov"])
 
     if uploaded_file is not None:
-        # Read the video file using OpenCV
         video_bytes = uploaded_file.read()
-        video_np = np.asarray(bytearray(video_bytes), dtype=np.uint8)
+        video_np = np.frombuffer(video_bytes, np.uint8)
         video_cv = cv2.imdecode(video_np, cv2.IMREAD_UNCHANGED)
-
-        # Create a VideoTransformer instance
         video_transformer = VideoTransformer()
         video_transformer.selected_filter = selected_filter
         video_transformer.blur_rate = blur_rate
         video_transformer.brightness_amount = brightness_amount
         video_transformer.apply_enhancement_filter = apply_enhancement_filter
 
-        # Process the video frames
-        processed_frames = []
-        for frame in video_transformer.transform_video(video_cv):
-            processed_frames.append(frame)
+        processed_frames = video_transformer.transform_video(video_cv)
 
-        # Create an output video path
-        output_video_path = "output.mp4"
+        result_video = cv2.VideoWriter("result.mp4", cv2.VideoWriter_fourcc(*"mp4v"), 30,
+                                       (video_cv.shape[1], video_cv.shape[0]))
 
-        # Save the processed frames as a new video
-        video_transformer.save_video(processed_frames, output_video_path)
+        for frame in processed_frames:
+            result_video.write(frame)
 
-        # Display the output video
-        st.subheader("Processed Video")
-        video_file = open(output_video_path, "rb")
-        video_bytes = video_file.read()
-        st.video(video_bytes)
+        result_video.release()
 
-        # Display a success message
-        st.success("Video processing complete!")
+        st.video("result.mp4")
 
 
 if __name__ == '__main__':
