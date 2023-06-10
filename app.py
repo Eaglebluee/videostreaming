@@ -1,21 +1,27 @@
+import cv2
 import streamlit as st
-from streamlit_webrtc import webrtc_streamer, VideoTransformerBase, RTCConfiguration
 
-RTC_CONFIGURATION = RTCConfiguration(
-    {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
-)
+def main():
+    st.title("Live Video Stream")
+    video_capture = cv2.VideoCapture(0)
 
-class VideoTransformer(VideoTransformerBase):
-    def transform(self, frame):
-        # Apply transformations to the frame (optional)
-        return frame
+    if not video_capture.isOpened():
+        st.error("Unable to open the camera.")
+        return
 
-st.title("My first Streamlit app")
-st.write("Hello, world")
+    while True:
+        ret, frame = video_capture.read()
+        if not ret:
+            st.error("Failed to capture frame from camera.")
+            break
 
-webrtc_streamer(
-    key="example",
-    mode="video",
-    rtc_configuration=RTC_CONFIGURATION,
-    video_transformer_factory=VideoTransformer,
-)
+        # Resize frame to fit the Streamlit app
+        resized_frame = cv2.resize(frame, (640, 480))
+
+        # Display the frame in Streamlit
+        st.image(resized_frame, channels="BGR")
+
+    video_capture.release()
+
+if __name__ == "__main__":
+    main()
