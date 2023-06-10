@@ -1,0 +1,6 @@
+opencv-python-headless
+streamlit
+numpy
+Pillow
+streamlit_image_comparison
+aiortc
