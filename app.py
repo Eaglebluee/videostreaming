@@ -1,22 +1,30 @@
-from streamlit_webrtc import webrtc_streamer, RTCConfiguration
-import av
-import cv2
+import streamlit as st
+import tempfile
+import moviepy.editor as mp
 
-cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+# Set maximum video duration in seconds
+MAX_DURATION = 15
 
-class VideoProcessor:
-	def recv(self, frame):
-		frm = frame.to_ndarray(format="bgr24")
+# Display upload file form
+uploaded_file = st.file_uploader("Upload Video", type=["mp4", "mov", "avi"])
 
-		faces = cascade.detectMultiScale(cv2.cvtColor(frm, cv2.COLOR_BGR2GRAY), 1.1, 3)
+# Process uploaded file
+if uploaded_file is not None:
+    # Create a temporary file to save the uploaded video
+    temp_file = tempfile.NamedTemporaryFile(delete=False)
+    temp_file.write(uploaded_file.read())
 
-		for x,y,w,h in faces:
-			cv2.rectangle(frm, (x,y), (x+w, y+h), (0,255,0), 3)
+    # Get the duration of the video
+    video_duration = mp.VideoFileClip(temp_file.name).duration
 
-		return av.VideoFrame.from_ndarray(frm, format='bgr24')
+    # Check if the video duration is within the allowed limit
+    if video_duration <= MAX_DURATION:
+        # Process the video
+        st.success("Video uploaded successfully!")
+        st.video(temp_file.name)
+    else:
+        # Video duration exceeds the allowed limit
+        st.error(f"Video duration should be less than or equal to {MAX_DURATION} seconds.")
 
-webrtc_streamer(key="key", video_processor_factory=VideoProcessor,
-				rtc_configuration=RTCConfiguration(
-					{"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
-					)
-	)
+    # Remove the temporary file
+    temp_file.close()
