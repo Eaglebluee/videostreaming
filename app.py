@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import streamlit as st
+from PIL import Image
 from streamlit_webrtc import VideoTransformerBase, webrtc_streamer, WebRtcMode
 
 
@@ -32,12 +33,18 @@ def main():
 
     # Display the transformed video frames
     if webrtc_ctx.video_transformer:
-        st.image(webrtc_ctx.video_transformer)
+        transformed_frame = webrtc_ctx.video_transformer.get_frame()
+        if transformed_frame is not None:
+            # Convert the frame to PIL Image format
+            image = Image.fromarray(transformed_frame)
+            # Display the image
+            st.image(image, channels="BGR")
 
     st.markdown("---")
     st.markdown("### Instructions")
     st.markdown("1. Click the **Start** button to start the video stream.")
     st.markdown("2. Apply the **Pencil Sketch** effect using the menu on the left.")
+
 
 if __name__ == "__main__":
     main()
