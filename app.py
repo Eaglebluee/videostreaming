@@ -43,32 +43,22 @@ def main():
             # Add filtered frame to the list
             frames.append(filtered_frame)
 
-        # Save edited video
-        edited_video_path = "edited_video.mp4"
-        out = cv2.VideoWriter(edited_video_path, cv2.VideoWriter_fourcc(*"mp4v"), cap.get(cv2.CAP_PROP_FPS),
+        cap.release()
+
+        # Save edited video as a temporary file
+        edited_temp_file = tempfile.NamedTemporaryFile(delete=False)
+        edited_temp_file.close()
+
+        out = cv2.VideoWriter(edited_temp_file.name, cv2.VideoWriter_fourcc(*"mp4v"), cap.get(cv2.CAP_PROP_FPS),
                               (frames[0].shape[1], frames[0].shape[0]))
 
         for frame in frames:
             out.write(frame)
 
         out.release()
-        cap.release()
-
-        # Remove temporary file
-        os.remove(temp_file.name)
 
         # Display edited video
         st.subheader("Edited Video")
-
-        # Read edited video as bytes
-        with open(edited_video_path, "rb") as file:
-            video_bytes = file.read()
-
-        # Save edited video as a temporary file
-        edited_temp_file = tempfile.NamedTemporaryFile(delete=False)
-        edited_temp_file.write(video_bytes)
-
-        # Display the edited video using st.video
         st.video(edited_temp_file.name)
 
         # Remove the edited temporary file
