@@ -6,6 +6,9 @@ from streamlit_webrtc import VideoTransformerBase, webrtc_streamer, WebRtcMode
 
 
 class PencilSketchTransformer(VideoTransformerBase):
+    def __init__(self):
+        self.transformed_frame = None
+
     def transform(self, frame):
         # Convert the BGR frame to grayscale
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -17,6 +20,10 @@ class PencilSketchTransformer(VideoTransformerBase):
         pencil_sketch = cv2.divide(gray, 255 - blur, scale=256.0)
         # Convert the pencil sketch back to BGR
         sketch_bgr = cv2.cvtColor(pencil_sketch, cv2.COLOR_GRAY2BGR)
+
+        # Store the transformed frame
+        self.transformed_frame = sketch_bgr
+
         return sketch_bgr
 
 
@@ -33,7 +40,8 @@ def main():
 
     # Display the transformed video frames
     if webrtc_ctx.video_transformer:
-        transformed_frame = webrtc_ctx.video_transformer.get_frame()
+        # Access the transformed frame from the transformer object
+        transformed_frame = webrtc_ctx.video_transformer.transformed_frame
         if transformed_frame is not None:
             # Convert the frame to PIL Image format
             image = Image.fromarray(transformed_frame)
