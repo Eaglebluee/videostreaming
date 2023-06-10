@@ -53,42 +53,40 @@ def download_video(video_path):
         href = f'<a href="data:video/mp4;base64,{video_base64}" download="output.mp4">Download edited video</a>'
         st.markdown(href, unsafe_allow_html=True)
 
-    while True:
-        ret, frame = video_capture.read()
-        if not ret:
-            break
-
-        blurred_frame = cv2.GaussianBlur(frame, kernel_size, 0)
-        writer.write(blurred_frame)
-        progress = (video_capture.get(cv2.CAP_PROP_POS_FRAMES) / video_capture.get(cv2.CAP_PROP_FRAME_COUNT)) * 100
-        st.progress(progress)
-
-    video_capture.release()
-    writer.release()
-
-    st.success("Blur effect applied to the video!")
-
 def main():
-    st.title("Python Video Editor")
-    st.write("Upload a video file and select the editing option.")
+    st.title("Video Editor")
 
+    # Upload video
     uploaded_file = st.file_uploader("Upload a video", type=['mp4', 'mov'])
 
     if uploaded_file is not None:
-        selected_option = st.selectbox("Select an editing option", ["Extract Frames", "Add Text Overlay", "Apply Blur Effect"])
+        # Get the file name
+        file_name = uploaded_file.name
+
+        # Save the uploaded file
+        with open(file_name, "wb") as file:
+            file.write(uploaded_file.getbuffer())
+
+        # Video editing options
+        options = ["Extract Frames", "Add Text Overlay", "Apply Blur Effect"]
+        selected_option = st.selectbox("Select an option", options)
 
         if selected_option == "Extract Frames":
-            if st.button("Extract"):
-                extract_frames(uploaded_file)
-        elif selected_option == "Add Text Overlay":
-            if st.button("Add"):
-                add_text_overlay(uploaded_file)
-        elif selected_option == "Apply Blur Effect":
-            if st.button("Apply"):
-                apply_blur_effect(uploaded_file)
+            extract_frames(file_name)
+            st.success("Frames extracted successfully.")
 
-          if st.button("Download"):
-        download_video("output.mp4")
+        elif selected_option == "Add Text Overlay":
+            add_text_overlay(file_name)
+            st.success("Text overlay applied successfully.")
+
+        elif selected_option == "Apply Blur Effect":
+            apply_blur_effect(file_name)
+            st.success("Blur effect applied successfully.")
+
+        st.video(file_name)
+
+        if st.button("Download"):
+            download_video(file_name)
 
 if __name__ == '__main__':
     main()
