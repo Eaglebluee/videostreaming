@@ -46,6 +46,13 @@ def apply_blur_effect(video_file):
     st.text("Applying blur effect to the video...")
     st.progress(0)
 
+def download_video(video_path):
+    with open(video_path, "rb") as video_file:
+        video_bytes = video_file.read()
+        video_base64 = base64.b64encode(video_bytes).decode("utf-8")
+        href = f'<a href="data:video/mp4;base64,{video_base64}" download="output.mp4">Download edited video</a>'
+        st.markdown(href, unsafe_allow_html=True)
+
     while True:
         ret, frame = video_capture.read()
         if not ret:
@@ -79,6 +86,9 @@ def main():
         elif selected_option == "Apply Blur Effect":
             if st.button("Apply"):
                 apply_blur_effect(uploaded_file)
+
+          if st.button("Download"):
+        download_video("output.mp4")
 
 if __name__ == '__main__':
     main()
