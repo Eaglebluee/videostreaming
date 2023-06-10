@@ -1,8 +1,8 @@
 opencv-python-headless
-
+aioice 
 numpy
 Pillow
-
+asyncio
 aiortc
 streamlit-webrtc
 moviepy
