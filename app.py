@@ -2,10 +2,8 @@ import cv2
 import streamlit as st
 import numpy as np
 from PIL import Image
-from streamlit_webrtc import VideoTransformerBase, webrtc_streamer
 
-
-class VideoTransformer(VideoTransformerBase):
+class VideoTransformer:
     def __init__(self):
         self.selected_filter = "None"
         self.blur_rate = 0.5
@@ -81,16 +79,15 @@ class VideoTransformer(VideoTransformerBase):
         elif self.selected_filter == "Winter":
             processed_frame = self.winter(frame)
         else:
-            processed_frame = np.copy(frame)
-
-        processed_frame = self.blur_image(processed_frame, self.blur_rate)
-        processed_frame = self.brighten_image(processed_frame, self.brightness_amount)
+            processed_frame = frame
 
         if self.apply_enhancement_filter:
             processed_frame = self.enhance_details(processed_frame)
 
-        return processed_frame
+        processed_frame = self.blur_image(processed_frame, self.blur_rate)
+        processed_frame = self.brighten_image(processed_frame, self.brightness_amount)
 
+        return processed_frame
 
 def main():
     st.title("Video Editor")
@@ -115,19 +112,38 @@ def main():
     brightness_amount = st.sidebar.slider("Brightness", min_value=-50, max_value=50, value=0)
     apply_enhancement_filter = st.sidebar.checkbox('Enhance Details')
 
-    webrtc_ctx = webrtc_streamer(
-        key="example",
-        video_transformer_factory=VideoTransformer,
-        async_transform=True,
-    )
+    uploaded_file = st.file_uploader("Upload a video file", type=["mp4", "mov"])
 
-    if webrtc_ctx.video_transformer:
-        video_transformer = webrtc_ctx.video_transformer
+    if uploaded_file is not None:
+        video_path = "temp_video.mp4"
+        with open(video_path, "wb") as f:
+            f.write(uploaded_file.getvalue())
+
+        video_transformer = VideoTransformer()
         video_transformer.selected_filter = selected_filter
         video_transformer.blur_rate = blur_rate
         video_transformer.brightness_amount = brightness_amount
         video_transformer.apply_enhancement_filter = apply_enhancement_filter
 
+        cap = cv2.VideoCapture(video_path)
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        out = cv2.VideoWriter('output.mp4', fourcc, fps, (width, height))
+
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            processed_frame = video_transformer.transform(frame)
+            out.write(processed_frame)
+
+        cap.release()
+        out.release()
+
+        st.success("Video processing complete!")
 
 if __name__ == '__main__':
     main()
