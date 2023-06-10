@@ -138,16 +138,28 @@ def main():
         if video_cv is not None:
             processed_frames = video_transformer.transform_video(video_cv)
 
-            result_video = cv2.VideoWriter("result.mp4", cv2.VideoWriter_fourcc(*"mp4v"), 30,
-                                           (video_cv.shape[1], video_cv.shape[0]))
+            # Display the original video
+            st.subheader("Original Video")
+            st.video(uploaded_file)
 
-            for frame in processed_frames:
-                result_video.write(frame)
+            # Display the edited video
+            st.subheader("Edited Video")
+            edited_video_bytes = encode_video(processed_frames)
+            st.video(edited_video_bytes)
 
-            result_video.release()
+def encode_video(frames):
+    # Convert frames to bytes for streaming
+    edited_video = cv2.VideoWriter_fourcc(*"mp4v")
+    frame_shape = frames[0].shape[:2][::-1]
+    edited_video_stream = cv2.VideoWriter("edited_video.mp4", edited_video, 30, frame_shape)
+    for frame in frames:
+        edited_video_stream.write(frame)
+    edited_video_stream.release()
 
-            st.video("result.mp4")
+    with open("edited_video.mp4", "rb") as file:
+        video_bytes = file.read()
 
+    return video_bytes
 
 if __name__ == '__main__':
     main()
