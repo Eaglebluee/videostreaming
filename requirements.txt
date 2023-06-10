@@ -2,7 +2,7 @@ opencv-python-headless
 
 numpy
 Pillow
-streamlit_image_comparison
+
 aiortc
-streamlit-webrtc==0.45.1 
+streamlit-webrtc
 moviepy
