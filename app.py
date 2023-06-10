@@ -59,10 +59,8 @@ def main():
 
         # Display edited video
         st.subheader("Edited Video")
-
-        with open(edited_video_path, "rb") as file:
-            video_bytes = file.read()
-            st.video(video_bytes)
+        st.markdown(f'<video width="640" height="480" controls><source src="{edited_video_path}" type="video/mp4"></video>',
+                    unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
