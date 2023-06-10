@@ -1,27 +1,18 @@
-import cv2
 import streamlit as st
+from streamlit_webrtc import webrtc_streamer
+import av
+import cv2
 
-def main():
-    st.title("Live Video Stream")
-    video_capture = cv2.VideoCapture(0)
+st.title("My first Streamlit app")
+st.write("Hello, world")
 
-    if not video_capture.isOpened():
-        st.error("Unable to open the camera.")
-        return
 
-    while True:
-        ret, frame = video_capture.read()
-        if not ret:
-            st.error("Failed to capture frame from camera.")
-            break
+def callback(frame):
+    img = frame.to_ndarray(format="bgr24")
 
-        # Resize frame to fit the Streamlit app
-        resized_frame = cv2.resize(frame, (640, 480))
+    img = cv2.cvtColor(cv2.Canny(img, 100, 200), cv2.COLOR_GRAY2BGR)
 
-        # Display the frame in Streamlit
-        st.image(resized_frame, channels="BGR")
+    return av.VideoFrame.from_ndarray(img, format="bgr24")
 
-    video_capture.release()
 
-if __name__ == "__main__":
-    main()
+webrtc_streamer(key="example", video_frame_callback=callback)
