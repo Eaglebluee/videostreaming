@@ -2,6 +2,8 @@ import streamlit as st
 import cv2
 import numpy as np
 from moviepy.editor import VideoFileClip
+import tempfile
+import os
 
 def apply_sepia_filter(frame):
     # Apply sepia filter to the frame
@@ -22,9 +24,12 @@ def main():
         st.subheader("Original Video")
         st.video(video_file)
 
+        # Save video to a temporary file
+        temp_file = tempfile.NamedTemporaryFile(delete=False)
+        temp_file.write(video_file.read())
+
         # Process video
-        video_bytes = video_file.read()
-        cap = cv2.VideoCapture(video_bytes)
+        cap = cv2.VideoCapture(temp_file.name)
         frames = []
 
         while cap.isOpened():
@@ -48,6 +53,9 @@ def main():
 
         out.release()
         cap.release()
+
+        # Remove temporary file
+        os.remove(temp_file.name)
 
         # Display edited video
         st.subheader("Edited Video")
