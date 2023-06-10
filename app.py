@@ -1,16 +1,36 @@
 import streamlit as st
+import cv2
+import numpy as np
+
+def pencil_sketch(video_frame):
+    gray_frame = cv2.cvtColor(video_frame, cv2.COLOR_BGR2GRAY)
+    inverted_frame = cv2.bitwise_not(gray_frame)
+    blurred_frame = cv2.GaussianBlur(inverted_frame, (111, 111), 0)
+    inverted_blurred_frame = cv2.bitwise_not(blurred_frame)
+    sketch_frame = cv2.divide(gray_frame, inverted_blurred_frame, scale=256.0)
+    return cv2.cvtColor(sketch_frame, cv2.COLOR_GRAY2BGR)
 
 def main():
-    st.title("Video Upload")
+    st.title("Video Filters")
 
     uploaded_file = st.file_uploader("Upload a video", type=['mp4', 'mov'])
 
     if uploaded_file is not None:
-        # Process the uploaded video here
-        # You can use libraries like OpenCV or FFmpeg to work with videos
-        # Display the video using st.video() or perform other operations
+        # Read the video file
+        video_bytes = uploaded_file.read()
+        video_nparray = np.frombuffer(video_bytes, np.uint8)
+        video_capture = cv2.imdecode(video_nparray, cv2.IMREAD_UNCHANGED)
 
-        st.video(uploaded_file)
+        # Display the original video
+        st.video(video_capture)
+
+        # Dropdown menu for filters
+        filter_option = st.selectbox("Filters", ["None", "Pencil Sketch"])
+
+        # Apply selected filter to the video
+        if filter_option == "Pencil Sketch":
+            sketch_video = pencil_sketch(video_capture)
+            st.video(sketch_video)
 
 if __name__ == '__main__':
     main()
