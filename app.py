@@ -16,8 +16,8 @@ def main():
     uploaded_file = st.file_uploader("Upload a video", type=['mp4', 'mov'])
 
     if uploaded_file is not None:
-        # Read the video file
         try:
+            # Read the video file
             video_bytes = uploaded_file.read()
             video_nparray = np.frombuffer(video_bytes, np.uint8)
             video_capture = cv2.imdecode(video_nparray, cv2.IMREAD_UNCHANGED)
