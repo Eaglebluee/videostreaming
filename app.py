@@ -1,6 +1,7 @@
 import streamlit as st
 import cv2
 import numpy as np
+import base64
 from moviepy.editor import VideoFileClip
 import tempfile
 import os
@@ -59,8 +60,16 @@ def main():
 
         # Display edited video
         st.subheader("Edited Video")
-        st.markdown(f'<video width="640" height="480" controls><source src="{edited_video_path}" type="video/mp4"></video>',
-                    unsafe_allow_html=True)
+
+        # Read edited video as bytes
+        with open(edited_video_path, "rb") as file:
+            video_bytes = file.read()
+
+        # Encode video bytes to base64
+        video_base64 = base64.b64encode(video_bytes).decode("utf-8")
+
+        # Embed base64 video in HTML5 video tag
+        st.video(f"data:video/mp4;base64,{video_base64}")
 
 if __name__ == "__main__":
     main()
