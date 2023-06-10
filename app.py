@@ -135,17 +135,18 @@ def main():
         video_transformer.brightness_amount = brightness_amount
         video_transformer.apply_enhancement_filter = apply_enhancement_filter
 
-        processed_frames = video_transformer.transform_video(video_cv)
+        if video_cv is not None:
+            processed_frames = video_transformer.transform_video(video_cv)
 
-        result_video = cv2.VideoWriter("result.mp4", cv2.VideoWriter_fourcc(*"mp4v"), 30,
-                                       (video_cv.shape[1], video_cv.shape[0]))
+            result_video = cv2.VideoWriter("result.mp4", cv2.VideoWriter_fourcc(*"mp4v"), 30,
+                                           (video_cv.shape[1], video_cv.shape[0]))
 
-        for frame in processed_frames:
-            result_video.write(frame)
+            for frame in processed_frames:
+                result_video.write(frame)
 
-        result_video.release()
+            result_video.release()
 
-        st.video("result.mp4")
+            st.video("result.mp4")
 
 
 if __name__ == '__main__':
