@@ -6,3 +6,4 @@ asyncio
 aiortc
 streamlit-webrtc
 moviepy
+PIL
