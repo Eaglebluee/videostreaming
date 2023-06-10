@@ -58,9 +58,11 @@ def main():
         os.remove(temp_file.name)
 
         # Display edited video
+        st.subheader("Edited Video")
+
         with open(edited_video_path, "rb") as file:
-            st.subheader("Edited Video")
-            st.video(file)
+            video_bytes = file.read()
+            st.video(video_bytes)
 
 if __name__ == "__main__":
     main()
