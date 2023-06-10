@@ -1,9 +1,5 @@
 opencv-python-headless
-aioice 
+streamlit
 numpy
 Pillow
-asyncio
-aiortc
 streamlit-webrtc
-moviepy
-PIL
