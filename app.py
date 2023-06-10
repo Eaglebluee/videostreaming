@@ -2,6 +2,8 @@ import cv2
 import streamlit as st
 import numpy as np
 from moviepy.editor import VideoFileClip
+import tempfile
+import os
 
 # Helper function to apply filters to video frames
 def apply_filter(frame, filter_type):
@@ -21,7 +23,12 @@ def main():
     # Upload video file
     video_file = st.file_uploader("Upload a video", type=["mp4", "avi"])
     if video_file is not None:
-        clip = VideoFileClip(video_file)
+        # Save the uploaded file to a temporary location
+        temp_file_path = os.path.join(tempfile.gettempdir(), "uploaded_video.mp4")
+        with open(temp_file_path, "wb") as temp_file:
+            temp_file.write(video_file.read())
+        
+        clip = VideoFileClip(temp_file_path)
         duration = clip.duration
 
         # Limit video duration to 10 seconds
