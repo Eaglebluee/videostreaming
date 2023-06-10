@@ -7,6 +7,17 @@ import numpy as np
 # Set maximum video duration in seconds
 MAX_DURATION = 15
 
+def apply_canine_filter(frame):
+    # Convert frame to grayscale
+    gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+
+    # Apply the canine filter
+    canine_filter = np.zeros_like(frame)
+    canine_filter[..., 2] = gray  # Set the red channel to the grayscale image
+    canine_filter[..., 1] = gray  # Set the green channel to the grayscale image
+
+    return canine_filter
+
 # Display upload file form
 uploaded_file = st.file_uploader("Upload Video", type=["mp4", "mov", "avi"])
 
@@ -48,14 +59,3 @@ if uploaded_file is not None:
     else:
         # Video duration exceeds the allowed limit
         st.error(f"Video duration should be less than or equal to {MAX_DURATION} seconds.")
-
-def apply_canine_filter(frame):
-    # Convert frame to grayscale
-    gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-
-    # Apply the canine filter
-    canine_filter = np.zeros_like(frame)
-    canine_filter[..., 2] = gray  # Set the red channel to the grayscale image
-    canine_filter[..., 1] = gray  # Set the green channel to the grayscale image
-
-    return canine_filter
