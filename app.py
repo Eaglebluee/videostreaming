@@ -17,20 +17,28 @@ def main():
 
     if uploaded_file is not None:
         # Read the video file
-        video_bytes = uploaded_file.read()
-        video_nparray = np.frombuffer(video_bytes, np.uint8)
-        video_capture = cv2.imdecode(video_nparray, cv2.IMREAD_UNCHANGED)
+        try:
+            video_bytes = uploaded_file.read()
+            video_nparray = np.frombuffer(video_bytes, np.uint8)
+            video_capture = cv2.imdecode(video_nparray, cv2.IMREAD_UNCHANGED)
 
-        # Display the original video
-        st.video(video_capture)
+            if video_capture is not None:
+                # Display the original video
+                st.video(video_capture)
 
-        # Dropdown menu for filters
-        filter_option = st.selectbox("Filters", ["None", "Pencil Sketch"])
+                # Dropdown menu for filters
+                filter_option = st.selectbox("Filters", ["None", "Pencil Sketch"])
 
-        # Apply selected filter to the video
-        if filter_option == "Pencil Sketch":
-            sketch_video = pencil_sketch(video_capture)
-            st.video(sketch_video)
+                # Apply selected filter to the video
+                if filter_option == "Pencil Sketch":
+                    sketch_video = pencil_sketch(video_capture)
+                    st.video(sketch_video)
+                else:
+                    st.warning("Please select a valid filter option.")
+            else:
+                st.error("Failed to read the video file.")
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
 
 if __name__ == '__main__':
     main()
